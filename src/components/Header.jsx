@@ -1,4 +1,5 @@
 import { useState } from "react";
+import logo from "../assets/logo/logo.png";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,11 +21,10 @@ const Header = () => {
   return (
     <header className="bg-black text-white">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-[7rem]">
           <div className="flex items-center">
             <a href="#" className="flex items-center">
-              <span className="text-white text-xl font-bold">BOOST</span>
-              <span className="text-orange-500 text-xl font-bold">MYSITES</span>
+              <img src={logo} alt="logo" className="h-[5rem] object-contain" />
             </a>
           </div>
 
