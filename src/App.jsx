@@ -1,6 +1,7 @@
 import SignUpForm from "./page/SignUp";
 
 function App() {
+  console.log("asdf");
   return (
     <>
       <style jsx global>{`
