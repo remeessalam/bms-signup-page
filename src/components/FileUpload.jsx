@@ -1,29 +1,34 @@
-import { useState } from "react";
-
-const FileUpload = ({ register, name, label, errors }) => {
-  const [file, setFile] = useState(null);
-
+/* eslint-disable */
+const FileUpload = ({
+  register,
+  name,
+  label,
+  errors,
+  setFile,
+  file,
+  handleRemoveFile,
+  setImage,
+  image,
+}) => {
   const handleFileChange = (e) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile) {
-      setFile(URL.createObjectURL(uploadedFile)); // Store file URL for preview
+      setFile(uploadedFile);
+      setImage(URL.createObjectURL(uploadedFile));
     }
-  };
-
-  const handleRemoveFile = () => {
-    setFile(null); // Remove the file
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     const uploadedFile = e.dataTransfer.files[0];
     if (uploadedFile) {
-      setFile(URL.createObjectURL(uploadedFile)); // Store file URL for preview
+      setFile(uploadedFile);
+      setImage(URL.createObjectURL(uploadedFile));
     }
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // Necessary to allow for dropping
+    e.preventDefault();
   };
 
   return (
@@ -42,9 +47,9 @@ const FileUpload = ({ register, name, label, errors }) => {
             className="hidden"
             {...register(name, { required: "Please upload a file" })}
             id={name}
-            onChange={handleFileChange} // Handle file selection
+            onChange={handleFileChange}
           />
-          {!file && (
+          {!image && (
             <>
               <label htmlFor={name} className="cursor-pointer block">
                 <div className="text-gray-600 text-lg mb-2">
@@ -58,10 +63,10 @@ const FileUpload = ({ register, name, label, errors }) => {
           )}
         </div>
 
-        {file && (
+        {image && (
           <div className="mt-4">
             <img
-              src={file}
+              src={image}
               alt="Uploaded file preview"
               className="max-w-full h-auto mb-2"
             />
@@ -72,10 +77,9 @@ const FileUpload = ({ register, name, label, errors }) => {
         )}
       </div>
 
-      {/* Show error message only if no file is uploaded and the field has been touched or on submit */}
       {errors[name] && !file && (
         <span className="text-red-200 text-sm mt-2">
-          {errors[name]?.message}
+          {/* eslint-disable-line */ errors[name]?.message}
         </span>
       )}
     </div>

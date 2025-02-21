@@ -4,24 +4,90 @@ import FileUpload from "../components/FileUpload";
 import SignaturePad from "../components/SignatureCanvas";
 import gif from "../assets/gif/signup-gif.gif";
 import Footer from "../components/Footer";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+
 const SignUpForm = () => {
+  const sigCanvas = useRef();
+
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
+    reset,
   } = useForm();
+  const [image, setImage] = useState(null);
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Here you would typically send the data to your server
+  const onSubmit = async (data) => {
+    if (loading) return;
+    setLoading(true);
     if (!data.signature) {
-      console.log(data, "asdfjaksdfklajdsf");
       alert("Please provide a signature");
+      setLoading(false);
       return;
     }
-    // Process form submission
+    console.log(file, "thisiddatafsa");
+    const formData = new FormData();
+
+    const emailBody = `Name: ${data.name}\n\nEmail: ${data.email}\n\nPhone: ${data.whatsapp}\n\npaymentId: ${data.paymentId}\n\npaymentDate:\n${data.paymentDate}`;
+
+    const signatureFile = dataURItoFile(data.signature, "signature.png");
+
+    console.log(signatureFile, "asdfasdfasdfasdf");
+    if (file) {
+      formData.append("file", file);
+    }
+    if (signatureFile) {
+      formData.append("file", signatureFile);
+    }
+    formData.append("body", emailBody);
+    try {
+      // "http://localhost:8080/api/send-email",
+      // "https://send-mail-redirect-boostmysites.vercel.app/send-email",
+      // "https://boostmysite-attachment-email-zeta.vercel.app/api/send-signup",
+
+      const response = await axios.post(
+        "https://boostmysite-attachment-email-zeta.vercel.app/api/send-signup",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("asdfasdfsdfs", response.data);
+      if (response.data.success) {
+        alert("Form submitted successfully!");
+        reset();
+        setFile(null);
+        setLoading(false);
+        clear();
+        handleRemoveFile();
+      } else {
+        alert("Form submission failed!");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Failed to submit form. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const dataURItoFile = (dataURI, filename) => {
+    const byteString = atob(dataURI.split(",")[1]);
+    const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new File([ab], filename, { type: mimeString });
   };
 
   useEffect(() => {
@@ -37,10 +103,17 @@ const SignUpForm = () => {
     }
   }, [errors]);
 
+  const clear = () => {
+    sigCanvas.current.clear();
+    setValue("signature", "");
+  };
+  const handleRemoveFile = () => {
+    setFile(null);
+    setImage(null);
+  };
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8 text-center">
@@ -50,12 +123,10 @@ const SignUpForm = () => {
               className="mx-auto w-64"
             />
           </div>
-
           <div className="bg-orange-500 rounded-lg p-6 shadow-lg">
             <h1 className="text-white text-4xl font-light mb-8 text-center">
               SIGN UP
             </h1>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <label className="block text-white text-lg mb-2">
@@ -115,6 +186,11 @@ const SignUpForm = () => {
                 name="idProof"
                 label="ID Proof"
                 errors={errors}
+                file={file}
+                setFile={setFile}
+                handleRemoveFile={handleRemoveFile}
+                setImage={setImage}
+                image={image}
               />
 
               <div>
@@ -149,7 +225,12 @@ const SignUpForm = () => {
                 </span>
               )}
 
-              <SignaturePad register={register} setValue={setValue} />
+              <SignaturePad
+                register={register}
+                setValue={setValue}
+                clear={clear}
+                sigCanvas={sigCanvas}
+              />
 
               <div className="flex items-start space-x-2">
                 <input
@@ -170,10 +251,13 @@ const SignUpForm = () => {
 
               <div className="text-center">
                 <button
+                  disabled={loading}
                   type="submit"
-                  className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+                  className={`${
+                    loading ? `bg-black/70` : `bg-black`
+                  } text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors`}
                 >
-                  Submit
+                  {loading ? "Sending..." : "Submit"}
                 </button>
               </div>
             </form>

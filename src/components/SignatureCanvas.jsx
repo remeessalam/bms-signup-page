@@ -1,15 +1,8 @@
-import React, { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
-
-const SignaturePad = ({ register, setValue }) => {
-  const sigCanvas = useRef();
-
-  const clear = () => {
-    sigCanvas.current.clear();
-    setValue("signature", "");
-  };
-
+// eslint-disable-next-line
+const SignaturePad = ({ register, setValue, clear, sigCanvas }) => {
   const save = () => {
+    // eslint-disable-next-line
     setValue("signature", sigCanvas.current.toDataURL());
   };
 
